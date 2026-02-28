@@ -17,16 +17,40 @@ AI-powered game calendar generator. Users select preferences (platform, genre, h
 
 ```
 src/
-├── app/            # Next.js App Router — routes and layouts only
-├── components/     # Shared UI components
-├── lib/            # Shared libraries (prisma client, API clients, etc.)
-├── types/          # Shared TypeScript types and interfaces
-└── utils/          # Shared utility functions
+├── app/                # Next.js App Router — routes and layouts only
+│   ├── layout.tsx      # Root layout (HTML, Providers, Header, Footer)
+│   ├── providers.tsx   # Client-side ChakraProvider wrapper
+│   ├── page.tsx        # Homepage (/)
+│   └── calendars/      # Calendar routes
+│       ├── page.tsx    # Calendar list (/calendars)
+│       ├── add/        # Generate calendar (/calendars/add)
+│       └── [id]/       # View calendar (/calendars/:id)
+├── components/         # Shared UI components
+│   ├── header/         # Site header/navigation
+│   ├── footer/         # Site footer
+│   └── sections/       # Homepage sections (hero, features, how-it-works, faq, cta-bottom)
+├── lib/                # Shared libraries (prisma client, API clients, etc.)
+├── types/              # Shared TypeScript types and interfaces
+└── utils/              # Shared utility functions
 prisma/
-├── schema.prisma   # Database schema
-prisma.config.ts    # Prisma v7 config (datasource URL lives here, not in schema)
-generated/          # Prisma generated client (gitignored)
+├── schema.prisma       # Database schema
+prisma.config.ts        # Prisma v7 config (datasource URL lives here, not in schema)
+generated/              # Prisma generated client (gitignored)
 ```
+
+## File & Component Conventions
+
+- **All file names are lowercase** — use kebab-case for multi-word names (e.g., `how-it-works.tsx`)
+- **Components use folder structure:** `component-name/index.ts` (re-export) + `component-name/component-name.tsx` (implementation)
+- **Top-level src dirs** (`components/`, `utils/`, `types/`, `lib/`) each have an `index.ts` barrel export
+- Example:
+  ```
+  src/components/
+    index.ts                  # export * from "./header"
+    header/
+      index.ts                # export { Header } from "./header"
+      header.tsx              # component implementation
+  ```
 
 ## Rules
 
