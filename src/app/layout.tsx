@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Box, Flex } from "@chakra-ui/react";
 import { Providers } from "./providers";
+import { Header, Footer } from "@/components";
 
 export const metadata: Metadata = {
   title: "Gamedar — AI-Powered Game Calendar",
@@ -13,9 +15,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className="dark"
+      style={{ colorScheme: "dark" }}
+    >
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <Flex direction="column" minH="dvh">
+            <Header />
+            <Box as="main" flex="1">
+              {children}
+            </Box>
+            <Footer />
+          </Flex>
+        </Providers>
       </body>
     </html>
   );

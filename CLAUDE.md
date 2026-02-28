@@ -28,6 +28,20 @@ prisma.config.ts    # Prisma v7 config (datasource URL lives here, not in schema
 generated/          # Prisma generated client (gitignored)
 ```
 
+## File & Component Conventions
+
+- **All file names are lowercase** — use kebab-case for multi-word names (e.g., `how-it-works.tsx`)
+- **Components use folder structure:** `component-name/index.ts` (re-export) + `component-name/component-name.tsx` (implementation)
+- **Top-level src dirs** (`components/`, `utils/`, `types/`, `lib/`) each have an `index.ts` barrel export
+- Example:
+  ```
+  src/components/
+    index.ts                  # export * from "./header"
+    header/
+      index.ts                # export { Header } from "./header"
+      header.tsx              # component implementation
+  ```
+
 ## Rules
 
 - **Always use latest versions** of all packages. Never pin to older versions.
