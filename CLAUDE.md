@@ -34,7 +34,7 @@ src/
 ├── types/              # Shared TypeScript types and interfaces
 └── utils/              # Shared utility functions
 prisma/
-├── schema.prisma       # Database schema
+├── schema.prisma       # Database schema (Calendar, CalendarGame models)
 prisma.config.ts        # Prisma v7 config (datasource URL lives here, not in schema)
 generated/              # Prisma generated client (gitignored)
 ```
