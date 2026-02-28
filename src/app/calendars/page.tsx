@@ -4,7 +4,7 @@ export default function CalendarsPage() {
   return (
     <Container maxW="5xl" py={{ base: "16", md: "24" }}>
       <VStack gap="4" textAlign="center">
-        <Heading size={{ base: "2xl", md: "3xl" }}>My Calendars</Heading>
+        <Heading size={{ base: "2xl", md: "3xl" }}>Calendars</Heading>
         <Text color="fg.muted" fontSize="lg">
           This page is coming soon.
         </Text>

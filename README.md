@@ -5,7 +5,7 @@ AI-powered game calendar generator. Select your platform, favorite genres, and a
 ## Tech Stack
 
 - Next.js 15+ (App Router, TypeScript)
-- Chakra UI v3
+- Chakra UI v3 + react-hook-form + Zod
 - Prisma v7 + PostgreSQL
 - Claude API (AI scheduling)
 - IGDB API (game data)
@@ -66,13 +66,17 @@ src/
 ├── app/              # Routes and layouts
 │   ├── page.tsx      # Homepage
 │   └── calendars/    # /calendars, /calendars/add, /calendars/:id
-├── components/       # Shared UI components (header, footer, sections)
+├── components/       # Shared UI components (header, footer, calendar-form, sections)
 ├── lib/              # Libraries (Prisma client, API clients)
 ├── types/            # Shared TypeScript types
 └── utils/            # Utility functions
 prisma/
 └── schema.prisma     # Database schema
 ```
+
+## CI
+
+GitHub Actions runs ESLint and Prettier checks on every push to `main` and on pull requests.
 
 ## License
 

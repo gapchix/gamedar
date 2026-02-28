@@ -32,7 +32,7 @@ export function CtaBottom() {
             Be the first to know when Gamedar launches. Your perfect gaming
             schedule is just around the corner.
           </Text>
-          <Button size="xl" colorPalette="purple" disabled>
+          <Button size="xl" disabled>
             Coming Soon
           </Button>
         </VStack>

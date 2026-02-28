@@ -7,7 +7,7 @@ AI-powered game calendar generator. Users select preferences (platform, genre, h
 ## Tech Stack
 
 - **Framework:** Next.js 15+ with App Router, TypeScript (strict mode)
-- **UI:** Chakra UI v3 (no Tailwind, no other UI libs)
+- **UI:** Chakra UI v3 (no Tailwind, no other UI libs), react-hook-form + Zod for forms
 - **ORM:** Prisma v7 with PostgreSQL via `@prisma/adapter-pg`
 - **AI:** Claude API (Anthropic SDK) — for calendar generation
 - **Game Data:** IGDB API
@@ -28,6 +28,7 @@ src/
 ├── components/         # Shared UI components
 │   ├── header/         # Site header/navigation
 │   ├── footer/         # Site footer
+│   ├── calendar-form/  # Calendar generation form (react-hook-form + Zod + Chakra UI)
 │   └── sections/       # Homepage sections (hero, features, how-it-works, faq, cta-bottom)
 ├── lib/                # Shared libraries (prisma client, API clients, etc.)
 ├── types/              # Shared TypeScript types and interfaces
@@ -55,7 +56,8 @@ generated/              # Prisma generated client (gitignored)
 ## Rules
 
 - **Always use latest versions** of all packages. Never pin to older versions.
-- **Chakra UI v3 only** — no Tailwind, no additional UI libraries. ChakraProvider requires `"use client"` wrapper and `value={defaultSystem}` prop.
+- **Chakra UI v3 only** — no Tailwind, no additional UI libraries. ChakraProvider requires `"use client"` wrapper and `value={defaultSystem}` prop. Global `colorPalette` is set to `"purple"` in theme — don't add `colorPalette="purple"` on individual components.
+- **Form validation:** Use Zod schemas (in `src/types/`) with `@hookform/resolvers/zod`. Define schema first, infer TypeScript types from it.
 - **`src/app/` is for routing only** — shared code goes in `components/`, `lib/`, `types/`, `utils/`.
 - **Don't install packages the user didn't request.** Transitive dependencies are fine, but don't add extra explicit dependencies without asking.
 - **Prisma v7:** DB URL is configured in `prisma.config.ts`, not in `schema.prisma`. Client is generated to `./generated/prisma/`. Use `@prisma/adapter-pg` for the PrismaClient constructor.
@@ -69,6 +71,7 @@ generated/              # Prisma generated client (gitignored)
 - **Prettier:** Configured in `.prettierrc`
 - **Husky:** Pre-commit hook runs `lint-staged`
 - **lint-staged:** ESLint --fix + Prettier on `*.{ts,tsx}`, Prettier on `*.{json,md,yml,yaml}`
+- **CI:** GitHub Actions (`.github/workflows/ci.yml`) — runs ESLint + Prettier check on push to `main` and PRs
 
 ## Commands
 

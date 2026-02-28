@@ -29,6 +29,9 @@ export function Header() {
             <Link asChild _hover={{ color: "accent" }}>
               <NextLink href="/">Home</NextLink>
             </Link>
+            <Link asChild _hover={{ color: "accent" }}>
+              <NextLink href="/calendars">Calendars</NextLink>
+            </Link>
             <Link
               href="https://github.com/gapchix/gamedar"
               target="_blank"
