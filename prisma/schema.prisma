@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Calendar {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  preferences Json
+  games       Json
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Game {
+  id        Int      @id
+  name      String
+  coverUrl  String?
+  summary   String?
+  rating    Float?
+  fetchedAt DateTime @default(now())
+}
