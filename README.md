@@ -63,13 +63,15 @@ This starts both the app and PostgreSQL.
 
 ```
 src/
-├── app/          # Routes and layouts
-├── components/   # Shared UI components
-├── lib/          # Libraries (Prisma client, API clients)
-├── types/        # Shared TypeScript types
-└── utils/        # Utility functions
+├── app/              # Routes and layouts
+│   ├── page.tsx      # Homepage
+│   └── calendars/    # /calendars, /calendars/add, /calendars/:id
+├── components/       # Shared UI components (header, footer, sections)
+├── lib/              # Libraries (Prisma client, API clients)
+├── types/            # Shared TypeScript types
+└── utils/            # Utility functions
 prisma/
-└── schema.prisma # Database schema
+└── schema.prisma     # Database schema
 ```
 
 ## License
