@@ -8,20 +8,30 @@ datasource db {
 }
 
 model Calendar {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  preferences Json
-  games       Json
-  views       Int      @default(0)
-  createdAt   DateTime @default(now())
+  id           String         @id @default(uuid())
+  name         String
+  platform     String
+  genres       String[]
+  hoursPerWeek Int
+  timePeriod   String
+  playStyle    String
+  createdAt    DateTime       @default(now())
+  games        CalendarGame[]
+
+  @@map("calendars")
 }
 
-model Game {
-  id        Int      @id
-  name      String
-  coverUrl  String?
-  summary   String?
-  rating    Float?
-  fetchedAt DateTime @default(now())
+model CalendarGame {
+  id             String   @id @default(uuid())
+  calendarId     String
+  igdbId         Int
+  title          String
+  coverUrl       String?
+  estimatedHours Float
+  startDate      DateTime
+  endDate        DateTime
+  order          Int
+  calendar       Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+
+  @@map("calendar_games")
 }
