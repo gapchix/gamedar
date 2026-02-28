@@ -4,9 +4,11 @@ import {
   Button,
   Container,
   Heading,
+  Link,
   Text,
   VStack,
 } from "@chakra-ui/react";
+import NextLink from "next/link";
 
 export function Hero() {
   return (
@@ -16,7 +18,7 @@ export function Hero() {
     >
       <Container maxW="5xl">
         <VStack gap="8" textAlign="center">
-          <Badge colorPalette="purple" size="lg" variant="subtle">
+          <Badge size="lg" variant="subtle">
             AI-Powered
           </Badge>
 
@@ -37,9 +39,11 @@ export function Hero() {
             you.
           </Text>
 
-          <Button size="xl" colorPalette="purple" disabled>
-            Coming Soon
-          </Button>
+          <Link asChild _hover={{ textDecoration: "none" }}>
+            <NextLink href="/calendars/add">
+              <Button size="xl">Get Started</Button>
+            </NextLink>
+          </Link>
         </VStack>
       </Container>
     </Box>

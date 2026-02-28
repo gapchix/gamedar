@@ -6,6 +6,11 @@ import {
 } from "@chakra-ui/react";
 
 const customConfig = defineConfig({
+  globalCss: {
+    "html, body": {
+      colorPalette: "purple",
+    },
+  },
   theme: {
     semanticTokens: {
       colors: {
