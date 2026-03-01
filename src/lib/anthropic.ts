@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { GenerationInput, GenerationResult } from "@/types";
 import { generationResultSchema } from "@/types";
+import { logger } from "./logger";
 
 const globalForAnthropic = globalThis as unknown as {
   anthropic: Anthropic | undefined;
@@ -98,10 +99,23 @@ export async function generateSchedule(
     throw new Error("ANTHROPIC_MODEL must be set");
   }
 
+  logger.info("Generating schedule with Claude", {
+    model,
+    gamesProvided: input.games.length,
+    platform: input.platform,
+    timePeriod: input.timePeriod,
+  });
+
   const message = await anthropic.messages.create({
     model,
     max_tokens: 4096,
     messages: [{ role: "user", content: prompt }],
+  });
+
+  logger.debug("Claude response received", {
+    inputTokens: message.usage.input_tokens,
+    outputTokens: message.usage.output_tokens,
+    stopReason: message.stop_reason,
   });
 
   const textBlock = message.content.find((block) => block.type === "text");
@@ -117,10 +131,20 @@ export async function generateSchedule(
       .trim();
     parsed = JSON.parse(jsonStr);
   } catch {
+    logger.error("Failed to parse Claude response as JSON", {
+      response: textBlock.text.slice(0, 500),
+    });
     throw new Error(
       `Failed to parse Claude response as JSON: ${textBlock.text.slice(0, 200)}`,
     );
   }
 
-  return generationResultSchema.parse(parsed);
+  const result = generationResultSchema.parse(parsed);
+
+  logger.info("Schedule generated", {
+    games: result.games.length,
+    summary: result.summary,
+  });
+
+  return result;
 }
