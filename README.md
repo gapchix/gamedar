@@ -7,8 +7,8 @@ AI-powered game calendar generator. Select your platform, favorite genres, and a
 - Next.js 15+ (App Router, TypeScript)
 - Chakra UI v3 + react-hook-form + Zod
 - Prisma v7 + PostgreSQL
-- Claude API (AI scheduling)
-- IGDB API (game data)
+- Claude API via `@anthropic-ai/sdk` (AI scheduling)
+- IGDB API via axios (game data)
 
 ## Getting Started
 
@@ -23,7 +23,12 @@ AI-powered game calendar generator. Select your platform, favorite genres, and a
 # Install dependencies
 npm install
 
-# Copy env file and fill in your keys
+# Copy env file and fill in your keys:
+#   DATABASE_URL          - PostgreSQL connection string
+#   IGDB_CLIENT_ID        - From Twitch Developer Console
+#   IGDB_CLIENT_SECRET    - From Twitch Developer Console
+#   ANTHROPIC_API_KEY     - From Anthropic Console
+#   ANTHROPIC_MODEL       - Claude model ID (default: claude-sonnet-4-20250514)
 cp .env.example .env
 
 # Start PostgreSQL via Docker (exposed on port 5532)
@@ -64,8 +69,8 @@ src/
 │   ├── page.tsx      # Homepage
 │   └── calendars/    # /calendars, /calendars/add, /calendars/:id
 ├── components/       # Shared UI components (header, footer, calendar-form, sections)
-├── lib/              # Libraries (Prisma client, API clients)
-├── types/            # Shared TypeScript types
+├── lib/              # Libraries (Prisma, IGDB client, Anthropic client)
+├── types/            # Shared TypeScript types (Zod schemas, IGDB mappings)
 └── utils/            # Utility functions
 prisma/
 └── schema.prisma     # Database schema
