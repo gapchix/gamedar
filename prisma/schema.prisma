@@ -12,10 +12,10 @@ model Calendar {
   name         String
   platform     String
   genres       String[]
-  hoursPerWeek Int
-  timePeriod   String
-  playStyle    String
-  createdAt    DateTime       @default(now())
+  hoursPerWeek Int            @map("hours_per_week")
+  timePeriod   String         @map("time_period")
+  playStyle    String         @map("play_style")
+  createdAt    DateTime       @default(now()) @map("created_at")
   games        CalendarGame[]
 
   @@map("calendars")
@@ -23,14 +23,15 @@ model Calendar {
 
 model CalendarGame {
   id             String   @id @default(uuid())
-  calendarId     String
-  igdbId         Int
+  calendarId     String   @map("calendar_id")
+  igdbId         Int      @map("igdb_id")
   title          String
-  coverUrl       String?
-  estimatedHours Float
-  startDate      DateTime
-  endDate        DateTime
+  coverUrl       String?  @map("cover_url")
+  estimatedHours Float    @map("estimated_hours")
+  startDate      DateTime @map("start_date")
+  endDate        DateTime @map("end_date")
   order          Int
+  createdAt      DateTime @default(now()) @map("created_at")
   calendar       Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
 
   @@map("calendar_games")

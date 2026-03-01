@@ -3,9 +3,11 @@ import {
   Button,
   Container,
   Heading,
+  Link,
   Text,
   VStack,
 } from "@chakra-ui/react";
+import NextLink from "next/link";
 
 export function CtaBottom() {
   return (
@@ -29,12 +31,14 @@ export function CtaBottom() {
             Ready to Level Up Your Gaming?
           </Heading>
           <Text color="fg.muted" fontSize="lg" maxW="lg">
-            Be the first to know when Gamedar launches. Your perfect gaming
-            schedule is just around the corner.
+            Your perfect gaming schedule is just a few clicks away. Tell us what
+            you like and let AI do the rest.
           </Text>
-          <Button size="xl" disabled>
-            Coming Soon
-          </Button>
+          <Link asChild _hover={{ textDecoration: "none" }}>
+            <NextLink href="/calendars/add">
+              <Button size="xl">Create Your Calendar</Button>
+            </NextLink>
+          </Link>
         </VStack>
       </Container>
     </Box>

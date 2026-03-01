@@ -26,13 +26,10 @@ npm install
 # Copy env file and fill in your keys
 cp .env.example .env
 
-# Start PostgreSQL via Docker
+# Start PostgreSQL via Docker (exposed on port 5532)
 docker compose up db -d
 
-# Generate Prisma client
-npx prisma generate
-
-# Run migrations
+# Run migrations (also generates Prisma client)
 npx prisma migrate dev
 
 # Start dev server
