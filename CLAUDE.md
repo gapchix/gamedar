@@ -22,10 +22,13 @@ src/
 │   ├── layout.tsx      # Root layout (HTML, Providers, Header, Footer)
 │   ├── providers.tsx   # Client-side ChakraProvider wrapper
 │   ├── page.tsx        # Homepage (/)
-│   └── calendars/      # Calendar routes
-│       ├── page.tsx    # Calendar list (/calendars)
-│       ├── add/        # Generate calendar (/calendars/add)
-│       └── [id]/       # View calendar (/calendars/:id)
+│   ├── calendars/      # Calendar routes
+│   │   ├── page.tsx    # Calendar list (/calendars)
+│   │   ├── add/        # Generate calendar (/calendars/add)
+│   │   └── [id]/       # View calendar (/calendars/:id)
+│   └── api/calendars/  # API routes
+│       ├── route.ts    # POST (create + generate) + GET (list)
+│       └── [id]/route.ts # GET (single calendar with games)
 ├── components/         # Shared UI components
 │   ├── header/         # Site header/navigation
 │   ├── footer/         # Site footer
@@ -110,7 +113,7 @@ npm run format:check      # Check formatting without writing
 - [x] Docker Compose with PostgreSQL 17
 - [x] IGDB API client (`src/lib/igdb.ts`)
 - [x] Claude API integration (`src/lib/anthropic.ts`) — AI calendar generation
-- [ ] API route: POST `/api/calendars` — create calendar + trigger generation
+- [x] API routes: POST/GET `/api/calendars`, GET `/api/calendars/[id]`
 - [ ] Wire up CalendarForm to submit to API
 - [ ] Calendar view page (`/calendars/[id]`) — display generated calendar with games
 - [ ] Calendar list page (`/calendars`) — browse all calendars
