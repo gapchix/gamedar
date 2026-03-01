@@ -35,6 +35,7 @@ src/
 └── utils/              # Shared utility functions
 prisma/
 ├── schema.prisma       # Database schema (Calendar, CalendarGame models)
+├── migrations/         # Prisma migrations (single init migration)
 prisma.config.ts        # Prisma v7 config (datasource URL lives here, not in schema)
 generated/              # Prisma generated client (gitignored)
 ```
@@ -60,7 +61,8 @@ generated/              # Prisma generated client (gitignored)
 - **Form validation:** Use Zod schemas (in `src/types/`) with `@hookform/resolvers/zod`. Define schema first, infer TypeScript types from it.
 - **`src/app/` is for routing only** — shared code goes in `components/`, `lib/`, `types/`, `utils/`.
 - **Don't install packages the user didn't request.** Transitive dependencies are fine, but don't add extra explicit dependencies without asking.
-- **Prisma v7:** DB URL is configured in `prisma.config.ts`, not in `schema.prisma`. Client is generated to `./generated/prisma/`. Use `@prisma/adapter-pg` for the PrismaClient constructor.
+- **Prisma v7:** DB URL is configured in `prisma.config.ts`, not in `schema.prisma`. Client is generated to `./generated/prisma/`. Use `@prisma/adapter-pg` for the PrismaClient constructor. DB column names use snake_case via `@map()`, Prisma fields stay camelCase.
+- **Database:** PostgreSQL 17 via Docker Compose, exposed on host port 5532. `DATABASE_URL` uses `localhost:5532`.
 - **Prettier config** uses `.prettierrc` (not `.prettierrc.json`).
 - **Keep docs updated** — when making significant changes, update README.md and CLAUDE.md accordingly.
 - **Open-source repo** — no secrets, credentials, or API keys in code. Use environment variables. Keep code, comments, and commit messages clean and professional.
@@ -76,12 +78,14 @@ generated/              # Prisma generated client (gitignored)
 ## Commands
 
 ```bash
-npm run dev           # Start dev server
-npm run build         # Production build
-npm run lint          # Run ESLint
-npm run format        # Format all files with Prettier
-npm run format:check  # Check formatting without writing
-npx prisma generate   # Regenerate Prisma client after schema changes
+docker compose up db -d   # Start PostgreSQL (exposed on port 5532)
+npx prisma migrate dev    # Run database migrations
+npx prisma generate       # Regenerate Prisma client after schema changes
+npm run dev               # Start dev server
+npm run build             # Production build
+npm run lint              # Run ESLint
+npm run format            # Format all files with Prettier
+npm run format:check      # Check formatting without writing
 ```
 
 ## Path Alias
