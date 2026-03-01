@@ -9,8 +9,9 @@ AI-powered game calendar generator. Users select preferences (platform, genre, h
 - **Framework:** Next.js 15+ with App Router, TypeScript (strict mode)
 - **UI:** Chakra UI v3 (no Tailwind, no other UI libs), react-hook-form + Zod for forms
 - **ORM:** Prisma v7 with PostgreSQL via `@prisma/adapter-pg`
-- **AI:** Claude API (Anthropic SDK) — for calendar generation
-- **Game Data:** IGDB API
+- **AI:** Claude API (`@anthropic-ai/sdk`) — for calendar generation, model configurable via `ANTHROPIC_MODEL` env var
+- **Game Data:** IGDB API (Twitch OAuth, axios client) — game search by platform/genre/theme + time-to-beat
+- **HTTP:** axios for external API clients
 - **Infra:** Docker + Docker Compose
 
 ## Project Structure
@@ -30,8 +31,14 @@ src/
 │   ├── footer/         # Site footer
 │   ├── calendar-form/  # Calendar generation form (react-hook-form + Zod + Chakra UI)
 │   └── sections/       # Homepage sections (hero, features, how-it-works, faq, cta-bottom)
-├── lib/                # Shared libraries (prisma client, API clients, etc.)
+├── lib/                # Shared libraries
+│   ├── prisma.ts       # Prisma client singleton
+│   ├── igdb.ts         # IGDB API client (axios instance, Twitch OAuth, game search)
+│   └── anthropic.ts    # Anthropic client singleton + schedule generation
 ├── types/              # Shared TypeScript types and interfaces
+│   ├── calendar.ts     # Form schema (Zod), platform/genre/period/playStyle enums
+│   ├── igdb.ts         # IGDB genre/theme/platform ID mappings, game types
+│   └── generation.ts   # Claude generation input/output types (Zod schemas)
 └── utils/              # Shared utility functions
 prisma/
 ├── schema.prisma       # Database schema (Calendar, CalendarGame models)
@@ -63,6 +70,8 @@ generated/              # Prisma generated client (gitignored)
 - **Don't install packages the user didn't request.** Transitive dependencies are fine, but don't add extra explicit dependencies without asking.
 - **Prisma v7:** DB URL is configured in `prisma.config.ts`, not in `schema.prisma`. Client is generated to `./generated/prisma/`. Use `@prisma/adapter-pg` for the PrismaClient constructor. DB column names use snake_case via `@map()`, Prisma fields stay camelCase.
 - **Database:** PostgreSQL 17 via Docker Compose, exposed on host port 5532. `DATABASE_URL` uses `localhost:5532`.
+- **IGDB API:** Uses a dedicated axios instance with request/response interceptors for auth. "Action" and "Horror" are IGDB **themes** (not genres) — mapped via `igdbThemeMap`. Time-to-beat is a separate endpoint (`/game_time_to_beats`), not a nested field. Token is cached with 5-min buffer before expiry.
+- **Claude API:** Singleton client pattern (same as Prisma). Model set via `ANTHROPIC_MODEL` env var (required). `generateSchedule()` returns Zod-validated `GenerationResult`.
 - **Prettier config** uses `.prettierrc` (not `.prettierrc.json`).
 - **Keep docs updated** — when making significant changes, update README.md and CLAUDE.md accordingly.
 - **Open-source repo** — no secrets, credentials, or API keys in code. Use environment variables. Keep code, comments, and commit messages clean and professional.
@@ -91,3 +100,17 @@ npm run format:check      # Check formatting without writing
 ## Path Alias
 
 `@/*` maps to `./src/*` — use it for all imports from src.
+
+## TODO
+
+- [x] Project init (Next.js, Chakra UI, ESLint, Prettier, Husky)
+- [x] Homepage with sections (hero, features, how-it-works, faq, cta-bottom)
+- [x] Calendar form page (`/calendars/add`) with Zod validation
+- [x] Prisma schema (Calendar, CalendarGame models) + init migration
+- [x] Docker Compose with PostgreSQL 17
+- [x] IGDB API client (`src/lib/igdb.ts`)
+- [x] Claude API integration (`src/lib/anthropic.ts`) — AI calendar generation
+- [ ] API route: POST `/api/calendars` — create calendar + trigger generation
+- [ ] Wire up CalendarForm to submit to API
+- [ ] Calendar view page (`/calendars/[id]`) — display generated calendar with games
+- [ ] Calendar list page (`/calendars`) — browse all calendars
