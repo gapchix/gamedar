@@ -1,7 +1,17 @@
 import { Box, Container, Heading, Text, VStack } from "@chakra-ui/react";
 import { CalendarForm } from "@/components";
+import { prisma } from "@/lib";
+import { DAILY_GENERATION_LIMIT } from "@/utils";
 
-export default function AddCalendarPage() {
+export default async function AddCalendarPage() {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const used = await prisma.calendar.count({
+    where: { createdAt: { gte: todayStart } },
+  });
+
+  const remaining = Math.max(0, DAILY_GENERATION_LIMIT - used);
   return (
     <Box
       backgroundImage="radial-gradient(ellipse at 50% 0%, rgba(128,90,213,0.15) 0%, transparent 50%), radial-gradient(circle, rgba(128,90,213,0.06) 1px, transparent 1px)"
@@ -29,7 +39,7 @@ export default function AddCalendarPage() {
           borderRadius="2xl"
           p={{ base: "6", md: "10" }}
         >
-          <CalendarForm />
+          <CalendarForm remaining={remaining} limit={DAILY_GENERATION_LIMIT} />
         </Box>
       </Container>
     </Box>

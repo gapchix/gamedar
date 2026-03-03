@@ -29,6 +29,7 @@ npm install
 #   IGDB_CLIENT_SECRET    - From Twitch Developer Console
 #   ANTHROPIC_API_KEY     - From Anthropic Console
 #   ANTHROPIC_MODEL       - Claude model ID (default: claude-sonnet-4-20250514)
+#   DAILY_GENERATION_LIMIT - Max calendars per day, global (default: 5)
 cp .env.example .env
 
 # Start PostgreSQL via Docker (exposed on port 5532)

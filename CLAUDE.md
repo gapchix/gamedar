@@ -75,6 +75,8 @@ generated/              # Prisma generated client (gitignored)
 - **Database:** PostgreSQL 17 via Docker Compose, exposed on host port 5532. `DATABASE_URL` uses `localhost:5532`.
 - **IGDB API:** Uses a dedicated axios instance with request/response interceptors for auth. "Action" and "Horror" are IGDB **themes** (not genres) — mapped via `igdbThemeMap`. Time-to-beat is a separate endpoint (`/game_time_to_beats`), not a nested field. Token is cached with 5-min buffer before expiry.
 - **Claude API:** Singleton client pattern (same as Prisma). Model set via `ANTHROPIC_MODEL` env var (required). `generateSchedule()` returns Zod-validated `GenerationResult`.
+- **Rate limiting:** Global daily generation limit via `DAILY_GENERATION_LIMIT` env var (defaults to `5`). Counted from `Calendar.createdAt` rows today. API returns 429 when exceeded.
+- **No client-side data fetching.** Never use `fetch`, `axios`, or any HTTP calls from client components. Always fetch data server-side in page/layout components (Server Components) and pass it as props to client components.
 - **Prettier config** uses `.prettierrc` (not `.prettierrc.json`).
 - **Keep docs updated** — when making significant changes, update README.md and CLAUDE.md accordingly.
 - **Open-source repo** — no secrets, credentials, or API keys in code. Use environment variables. Keep code, comments, and commit messages clean and professional.
@@ -114,6 +116,7 @@ npm run format:check      # Check formatting without writing
 - [x] IGDB API client (`src/lib/igdb.ts`)
 - [x] Claude API integration (`src/lib/anthropic.ts`) — AI calendar generation
 - [x] API routes: POST/GET `/api/calendars`, GET `/api/calendars/[id]`
+- [x] Global daily generation limit (`DAILY_GENERATION_LIMIT` env var, default 5)
 - [ ] Wire up CalendarForm to submit to API
 - [ ] Calendar view page (`/calendars/[id]`) — display generated calendar with games
 - [ ] Calendar list page (`/calendars`) — browse all calendars

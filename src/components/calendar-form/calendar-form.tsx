@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Alert,
   Button,
   Checkbox,
   Field,
@@ -49,7 +50,12 @@ const playStyles = [
   { value: "hardcore", label: "Hardcore" },
 ] as const;
 
-export function CalendarForm() {
+interface CalendarFormProps {
+  remaining: number;
+  limit: number;
+}
+
+export function CalendarForm({ remaining, limit }: CalendarFormProps) {
   const {
     register,
     handleSubmit,
@@ -71,9 +77,23 @@ export function CalendarForm() {
     console.log("Calendar form data:", data);
   };
 
+  const limitReached = remaining <= 0;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <VStack gap="8" align="stretch">
+        {/* Daily Limit Status */}
+        <Alert.Root status={limitReached ? "error" : "info"}>
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>
+              {limitReached
+                ? "Daily generation limit reached. Please try again tomorrow."
+                : `${remaining} of ${limit} generations remaining today.`}
+            </Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
+
         {/* Calendar Name */}
         <Field.Root invalid={!!errors.name}>
           <Field.Label>Calendar Name</Field.Label>
@@ -211,6 +231,7 @@ export function CalendarForm() {
           size="lg"
           colorPalette="purple"
           alignSelf="flex-start"
+          disabled={limitReached}
         >
           Generate Calendar
         </Button>
