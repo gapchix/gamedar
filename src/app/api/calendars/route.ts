@@ -1,9 +1,32 @@
 import { NextResponse } from "next/server";
 import { calendarFormSchema } from "@/types";
 import { prisma, igdbService, generateSchedule, logger } from "@/lib";
+import { DAILY_GENERATION_LIMIT } from "@/utils";
 
 export async function POST(request: Request) {
   try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayCount = await prisma.calendar.count({
+      where: { createdAt: { gte: todayStart } },
+    });
+
+    if (todayCount >= DAILY_GENERATION_LIMIT) {
+      logger.warn("Daily generation limit reached", {
+        limit: DAILY_GENERATION_LIMIT,
+        used: todayCount,
+      });
+      return NextResponse.json(
+        {
+          error: "Daily generation limit reached. Please try again tomorrow.",
+          limit: DAILY_GENERATION_LIMIT,
+          remaining: 0,
+        },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
     const data = calendarFormSchema.parse(body);
 
@@ -74,7 +97,13 @@ export async function POST(request: Request) {
 
     logger.info("Calendar created", { calendarId: calendar.id });
 
-    return NextResponse.json({ id: calendar.id }, { status: 201 });
+    return NextResponse.json(
+      {
+        id: calendar.id,
+        remaining: DAILY_GENERATION_LIMIT - todayCount - 1,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       logger.warn("Invalid request data", { error });
