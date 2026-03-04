@@ -28,7 +28,11 @@ export async function GET(
 
     return NextResponse.json(calendar);
   } catch (error) {
-    logger.error("Failed to fetch calendar", { error });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("Failed to fetch calendar", {
+      error: errorMessage,
+      name: error instanceof Error ? error.name : "Unknown",
+    });
     return NextResponse.json(
       { error: "Failed to fetch calendar" },
       { status: 500 },

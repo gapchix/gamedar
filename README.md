@@ -69,7 +69,7 @@ src/
 ├── app/              # Routes and layouts
 │   ├── page.tsx      # Homepage
 │   └── calendars/    # /calendars, /calendars/add, /calendars/:id
-├── components/       # Shared UI components (header, footer, calendar-form, sections)
+├── components/       # Shared UI (header, footer, calendar-form, calendar-list, calendar-view, share-button, sections)
 ├── lib/              # Libraries (Prisma, IGDB client, Anthropic client)
 ├── types/            # Shared TypeScript types (Zod schemas, IGDB mappings)
 └── utils/            # Utility functions
