@@ -58,6 +58,7 @@ export async function createCalendar(formData: unknown): Promise<ActionResult> {
     logger.info("Fetched games from IGDB", { count: games.length });
 
     const result = await generateSchedule({
+      calendarName: data.name,
       platform: data.platform,
       genres: [...data.genres],
       hoursPerWeek: data.hoursPerWeek,
@@ -75,7 +76,7 @@ export async function createCalendar(formData: unknown): Promise<ActionResult> {
 
     const calendar = await prisma.calendar.create({
       data: {
-        name: data.name,
+        name: result.calendarName,
         platform: data.platform,
         genres: [...data.genres],
         hoursPerWeek: data.hoursPerWeek,

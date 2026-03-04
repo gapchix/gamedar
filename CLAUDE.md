@@ -120,4 +120,4 @@ npm run format:check      # Check formatting without writing
 - [x] Global daily generation limit (`DAILY_GENERATION_LIMIT` env var, default 5)
 - [x] Wire up CalendarForm to submit to API (server action + toast notifications)
 - [ ] Calendar view page (`/calendars/[id]`) — display generated calendar with games
-- [ ] Calendar list page (`/calendars`) — browse all calendars
+- [x] Calendar list page (`/calendars`) — browse all calendars

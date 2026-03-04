@@ -58,6 +58,7 @@ export async function POST(request: Request) {
     logger.info("Fetched games from IGDB", { count: games.length });
 
     const result = await generateSchedule({
+      calendarName: data.name,
       platform: data.platform,
       genres: [...data.genres],
       hoursPerWeek: data.hoursPerWeek,
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
 
     const calendar = await prisma.calendar.create({
       data: {
-        name: data.name,
+        name: result.calendarName,
         platform: data.platform,
         genres: [...data.genres],
         hoursPerWeek: data.hoursPerWeek,
