@@ -82,6 +82,7 @@ export async function POST(request: Request) {
         hoursPerWeek: data.hoursPerWeek,
         timePeriod: data.timePeriod,
         playStyle: data.playStyle,
+        summary: result.summary,
         games: {
           create: result.games.map((g) => ({
             igdbId: g.igdbId,
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
             startDate: new Date(g.startDate),
             endDate: new Date(g.endDate),
             order: g.order,
+            reason: g.reason,
           })),
         },
       },
@@ -107,13 +109,22 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
-      logger.warn("Invalid request data", { error });
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.warn("Invalid request data", {
+        error: errorMessage,
+        name: error instanceof Error ? error.name : "Unknown",
+      });
       return NextResponse.json(
         { error: "Invalid request data", details: error },
         { status: 400 },
       );
     }
-    logger.error("Failed to create calendar", { error });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("Failed to create calendar", {
+      error: errorMessage,
+      name: error instanceof Error ? error.name : "Unknown",
+    });
     return NextResponse.json(
       { error: "Failed to create calendar" },
       { status: 500 },
@@ -132,7 +143,11 @@ export async function GET() {
 
     return NextResponse.json(calendars);
   } catch (error) {
-    logger.error("Failed to fetch calendars", { error });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("Failed to fetch calendars", {
+      error: errorMessage,
+      name: error instanceof Error ? error.name : "Unknown",
+    });
     return NextResponse.json(
       { error: "Failed to fetch calendars" },
       { status: 500 },

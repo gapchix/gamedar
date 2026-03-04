@@ -15,6 +15,7 @@ model Calendar {
   hoursPerWeek Int            @map("hours_per_week")
   timePeriod   String         @map("time_period")
   playStyle    String         @map("play_style")
+  summary      String?
   createdAt    DateTime       @default(now()) @map("created_at")
   games        CalendarGame[]
 
@@ -31,6 +32,7 @@ model CalendarGame {
   startDate      DateTime @map("start_date")
   endDate        DateTime @map("end_date")
   order          Int
+  reason         String?
   createdAt      DateTime @default(now()) @map("created_at")
   calendar       Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
 

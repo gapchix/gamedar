@@ -82,6 +82,7 @@ export async function createCalendar(formData: unknown): Promise<ActionResult> {
         hoursPerWeek: data.hoursPerWeek,
         timePeriod: data.timePeriod,
         playStyle: data.playStyle,
+        summary: result.summary,
         games: {
           create: result.games.map((g) => ({
             igdbId: g.igdbId,
@@ -91,6 +92,7 @@ export async function createCalendar(formData: unknown): Promise<ActionResult> {
             startDate: new Date(g.startDate),
             endDate: new Date(g.endDate),
             order: g.order,
+            reason: g.reason,
           })),
         },
       },
@@ -101,10 +103,19 @@ export async function createCalendar(formData: unknown): Promise<ActionResult> {
     return { success: true, id: calendar.id };
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
-      logger.warn("Invalid form data", { error });
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.warn("Invalid form data", {
+        error: errorMessage,
+        name: error instanceof Error ? error.name : "Unknown",
+      });
       return { success: false, error: "Invalid form data." };
     }
-    logger.error("Failed to create calendar", { error });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("Failed to create calendar", {
+      error: errorMessage,
+      name: error instanceof Error ? error.name : "Unknown",
+    });
     return { success: false, error: "Failed to create calendar." };
   }
 }

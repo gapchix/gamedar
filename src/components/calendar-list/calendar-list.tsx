@@ -22,6 +22,7 @@ import {
   FiPlay,
   FiPlus,
 } from "react-icons/fi";
+import { ShareButton } from "@/components/share-button";
 
 interface CalendarGame {
   coverUrl: string | null;
@@ -118,6 +119,9 @@ export function CalendarList({ calendars }: CalendarListProps) {
               overflow="hidden"
             >
               <Box position="relative" h="40" overflow="hidden">
+                <Box position="absolute" top="2" right="2" zIndex="2">
+                  <ShareButton calendarId={calendar.id} variant="icon" />
+                </Box>
                 {calendar.games.some((g) => g.coverUrl) ? (
                   <SimpleGrid
                     columns={Math.min(

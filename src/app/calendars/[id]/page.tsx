@@ -1,14 +1,32 @@
-import { Container, Heading, Text, VStack } from "@chakra-ui/react";
+import { notFound } from "next/navigation";
+import { Box } from "@chakra-ui/react";
+import { prisma } from "@/lib";
+import { CalendarView } from "@/components";
 
-export default function CalendarPage() {
+interface CalendarPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function CalendarPage({ params }: CalendarPageProps) {
+  const { id } = await params;
+
+  const calendar = await prisma.calendar.findUnique({
+    where: { id },
+    include: { games: { orderBy: { order: "asc" } } },
+  });
+
+  if (!calendar) {
+    notFound();
+  }
+
   return (
-    <Container maxW="5xl" py={{ base: "16", md: "24" }}>
-      <VStack gap="4" textAlign="center">
-        <Heading size={{ base: "2xl", md: "3xl" }}>Your Calendar</Heading>
-        <Text color="fg.muted" fontSize="lg">
-          This page is coming soon.
-        </Text>
-      </VStack>
-    </Container>
+    <Box
+      bgGradient="to-b"
+      gradientFrom="purple.500/5"
+      gradientTo="transparent"
+      minH="100vh"
+    >
+      <CalendarView calendar={calendar} />
+    </Box>
   );
 }

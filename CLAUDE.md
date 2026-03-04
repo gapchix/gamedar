@@ -33,6 +33,9 @@ src/
 │   ├── header/         # Site header/navigation
 │   ├── footer/         # Site footer
 │   ├── calendar-form/  # Calendar generation form (react-hook-form + Zod + Chakra UI)
+│   ├── calendar-list/  # Calendar list grid with cover images and share buttons
+│   ├── calendar-view/  # Full calendar view (header, AI summary, stats, game timeline, CTA)
+│   ├── share-button/   # Share button (copies calendar URL to clipboard, icon/full variants)
 │   ├── toaster/        # Toast notification setup (createToaster + Toaster component)
 │   └── sections/       # Homepage sections (hero, features, how-it-works, faq, cta-bottom)
 ├── lib/                # Shared libraries
@@ -46,7 +49,7 @@ src/
 └── utils/              # Shared utility functions
 prisma/
 ├── schema.prisma       # Database schema (Calendar, CalendarGame models)
-├── migrations/         # Prisma migrations (single init migration)
+├── migrations/         # Prisma migrations
 prisma.config.ts        # Prisma v7 config (datasource URL lives here, not in schema)
 generated/              # Prisma generated client (gitignored)
 ```
@@ -78,6 +81,7 @@ generated/              # Prisma generated client (gitignored)
 - **Claude API:** Singleton client pattern (same as Prisma). Model set via `ANTHROPIC_MODEL` env var (required). `generateSchedule()` returns Zod-validated `GenerationResult`.
 - **Rate limiting:** Global daily generation limit via `DAILY_GENERATION_LIMIT` env var (defaults to `5`). Counted from `Calendar.createdAt` rows today. API returns 429 when exceeded.
 - **No client-side data fetching.** Never use `fetch`, `axios`, or any HTTP calls from client components. Always fetch data server-side in page/layout components (Server Components) and pass it as props to client components.
+- **Error logging:** Never pass raw `Error` objects in winston meta (`{ error }`). Error properties like `message` aren't enumerable, so they won't serialize. Always extract: `{ error: error.message, name: error.name }`.
 - **Prettier config** uses `.prettierrc` (not `.prettierrc.json`).
 - **Keep docs updated** — when making significant changes, update README.md and CLAUDE.md accordingly.
 - **Open-source repo** — no secrets, credentials, or API keys in code. Use environment variables. Keep code, comments, and commit messages clean and professional.
@@ -119,5 +123,5 @@ npm run format:check      # Check formatting without writing
 - [x] API routes: POST/GET `/api/calendars`, GET `/api/calendars/[id]`
 - [x] Global daily generation limit (`DAILY_GENERATION_LIMIT` env var, default 5)
 - [x] Wire up CalendarForm to submit to API (server action + toast notifications)
-- [ ] Calendar view page (`/calendars/[id]`) — display generated calendar with games
+- [x] Calendar view page (`/calendars/[id]`) — display generated calendar with games
 - [x] Calendar list page (`/calendars`) — browse all calendars
