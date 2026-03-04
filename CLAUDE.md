@@ -33,6 +33,7 @@ src/
 │   ├── header/         # Site header/navigation
 │   ├── footer/         # Site footer
 │   ├── calendar-form/  # Calendar generation form (react-hook-form + Zod + Chakra UI)
+│   ├── toaster/        # Toast notification setup (createToaster + Toaster component)
 │   └── sections/       # Homepage sections (hero, features, how-it-works, faq, cta-bottom)
 ├── lib/                # Shared libraries
 │   ├── prisma.ts       # Prisma client singleton
@@ -117,6 +118,6 @@ npm run format:check      # Check formatting without writing
 - [x] Claude API integration (`src/lib/anthropic.ts`) — AI calendar generation
 - [x] API routes: POST/GET `/api/calendars`, GET `/api/calendars/[id]`
 - [x] Global daily generation limit (`DAILY_GENERATION_LIMIT` env var, default 5)
-- [ ] Wire up CalendarForm to submit to API
+- [x] Wire up CalendarForm to submit to API (server action + toast notifications)
 - [ ] Calendar view page (`/calendars/[id]`) — display generated calendar with games
 - [ ] Calendar list page (`/calendars`) — browse all calendars
