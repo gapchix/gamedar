@@ -12,7 +12,7 @@ AI-powered game calendar generator. Users select preferences (platform, genre, h
 - **AI:** Claude API (`@anthropic-ai/sdk`) — for calendar generation, model configurable via `ANTHROPIC_MODEL` env var
 - **Game Data:** IGDB API (Twitch OAuth, axios client) — game search by platform/genre/theme + time-to-beat
 - **HTTP:** axios for external API clients
-- **Infra:** Docker + Docker Compose
+- **Infra:** Docker + Docker Compose (multi-stage build, dev/prod profiles)
 
 ## Project Structure
 
@@ -76,7 +76,7 @@ generated/              # Prisma generated client (gitignored)
 - **`src/app/` is for routing only** — shared code goes in `components/`, `lib/`, `types/`, `utils/`.
 - **Don't install packages the user didn't request.** Transitive dependencies are fine, but don't add extra explicit dependencies without asking.
 - **Prisma v7:** DB URL is configured in `prisma.config.ts`, not in `schema.prisma`. Client is generated to `./generated/prisma/`. Use `@prisma/adapter-pg` for the PrismaClient constructor. DB column names use snake_case via `@map()`, Prisma fields stay camelCase.
-- **Database:** PostgreSQL 17 via Docker Compose, exposed on host port 5532. `DATABASE_URL` uses `localhost:5532`.
+- **Database:** PostgreSQL 17 via Docker Compose. Dev: exposed on host port 5532 (`localhost:5532`). Prod: internal Docker network only (`db:5432`), no host port exposed.
 - **IGDB API:** Uses a dedicated axios instance with request/response interceptors for auth. "Action" and "Horror" are IGDB **themes** (not genres) — mapped via `igdbThemeMap`. Time-to-beat is a separate endpoint (`/game_time_to_beats`), not a nested field. Token is cached with 5-min buffer before expiry.
 - **Claude API:** Singleton client pattern (same as Prisma). Model set via `ANTHROPIC_MODEL` env var (required). `generateSchedule()` returns Zod-validated `GenerationResult`.
 - **Rate limiting:** Global daily generation limit via `DAILY_GENERATION_LIMIT` env var (defaults to `5`). Counted from `Calendar.createdAt` rows today. API returns 429 when exceeded.
@@ -96,16 +96,29 @@ generated/              # Prisma generated client (gitignored)
 
 ## Commands
 
+### Dev
+
 ```bash
-docker compose up db -d   # Start PostgreSQL (exposed on port 5532)
-npx prisma migrate dev    # Run database migrations
-npx prisma generate       # Regenerate Prisma client after schema changes
-npm run dev               # Start dev server
-npm run build             # Production build
+make dev-db               # Start dev database (port 5532)
+make dev                  # Start dev server
+make migrate              # Run prisma migrate dev
+make generate             # Regenerate Prisma client
 npm run lint              # Run ESLint
 npm run format            # Format all files with Prettier
 npm run format:check      # Check formatting without writing
 ```
+
+### Production (Docker)
+
+```bash
+make prod-build           # Build production Docker image
+make prod-up              # Start app + db containers
+make prod-down            # Stop containers
+make prod-logs            # Tail container logs
+make prod-migrate         # Run migrations inside app container
+```
+
+Docker profiles: `dev` (db with host port 5532) and `prod` (app + db, no db port exposed, app on `localhost:3001`).
 
 ## Path Alias
 
@@ -125,3 +138,4 @@ npm run format:check      # Check formatting without writing
 - [x] Wire up CalendarForm to submit to API (server action + toast notifications)
 - [x] Calendar view page (`/calendars/[id]`) — display generated calendar with games
 - [x] Calendar list page (`/calendars`) — browse all calendars
+- [x] Production Docker deployment (multi-stage build, dev/prod profiles, Makefile)
