@@ -2,6 +2,7 @@ import { Box, Container, Heading, Text, VStack } from "@chakra-ui/react";
 import { CalendarForm } from "@/components";
 import { prisma } from "@/lib";
 import { DAILY_GENERATION_LIMIT } from "@/utils";
+import { createCalendar } from "./actions";
 
 export default async function AddCalendarPage() {
   const todayStart = new Date();
@@ -39,7 +40,11 @@ export default async function AddCalendarPage() {
           borderRadius="2xl"
           p={{ base: "6", md: "10" }}
         >
-          <CalendarForm remaining={remaining} limit={DAILY_GENERATION_LIMIT} />
+          <CalendarForm
+            remaining={remaining}
+            limit={DAILY_GENERATION_LIMIT}
+            action={createCalendar}
+          />
         </Box>
       </Container>
     </Box>
