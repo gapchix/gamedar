@@ -29,8 +29,15 @@ const PERIOD_WEEKS: Record<string, number> = {
 };
 
 function buildSchedulePrompt(input: GenerationInput): string {
-  const { platform, genres, hoursPerWeek, timePeriod, playStyle, games } =
-    input;
+  const {
+    calendarName,
+    platform,
+    genres,
+    hoursPerWeek,
+    timePeriod,
+    playStyle,
+    games,
+  } = input;
 
   const totalWeeks = PERIOD_WEEKS[timePeriod];
   const totalHours = hoursPerWeek * totalWeeks;
@@ -54,6 +61,10 @@ function buildSchedulePrompt(input: GenerationInput): string {
 
   return `You are a gaming schedule planner. Create a personalized game calendar.
 
+## Calendar Name
+"${calendarName}"
+If this name contains profanity, offensive language, or inappropriate content, return a cleaned-up version in the "calendarName" field. If the name is fine, return it as-is.
+
 ## Player Profile
 - **Platform:** ${platform}
 - **Preferred genres:** ${genres.join(", ")}
@@ -74,6 +85,7 @@ ${gameList}
 
 Respond with ONLY valid JSON matching this exact schema:
 {
+  "calendarName": "<sanitized calendar name>",
   "games": [
     {
       "igdbId": <number>,

@@ -3,6 +3,7 @@ import type { IgdbGame } from "./igdb";
 import type { Platform, PlayStyle, TimePeriod } from "./calendar";
 
 export interface GenerationInput {
+  calendarName: string;
   platform: Platform;
   genres: string[];
   hoursPerWeek: number;
@@ -22,6 +23,7 @@ export const scheduledGameSchema = z.object({
 });
 
 export const generationResultSchema = z.object({
+  calendarName: z.string(),
   games: z.array(scheduledGameSchema).min(1),
   summary: z.string(),
 });
