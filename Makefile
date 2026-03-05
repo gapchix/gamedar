@@ -14,6 +14,8 @@ generate:
 	npx prisma generate
 
 # -- Prod --
+prod-deploy: prod-build prod-up prod-migrate
+
 prod-build:
 	docker compose --profile prod build
 
