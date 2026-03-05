@@ -4,6 +4,8 @@ import { prisma } from "@/lib";
 import { DAILY_GENERATION_LIMIT } from "@/utils";
 import { createCalendar } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function AddCalendarPage() {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
