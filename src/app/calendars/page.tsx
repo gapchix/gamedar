@@ -12,6 +12,8 @@ import { FiPlus } from "react-icons/fi";
 import { CalendarList } from "@/components";
 import { prisma } from "@/lib";
 
+export const dynamic = "force-dynamic";
+
 export default async function CalendarsPage() {
   const calendars = await prisma.calendar.findMany({
     orderBy: { createdAt: "desc" },

@@ -3,6 +3,8 @@ import { Box } from "@chakra-ui/react";
 import { prisma } from "@/lib";
 import { CalendarView } from "@/components";
 
+export const dynamic = "force-dynamic";
+
 interface CalendarPageProps {
   params: Promise<{ id: string }>;
 }

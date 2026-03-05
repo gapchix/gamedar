@@ -15,11 +15,11 @@ function createAnthropicClient(): Anthropic {
   return new Anthropic({ apiKey });
 }
 
-export const anthropic =
-  globalForAnthropic.anthropic ?? createAnthropicClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForAnthropic.anthropic = anthropic;
+function getAnthropicClient(): Anthropic {
+  if (!globalForAnthropic.anthropic) {
+    globalForAnthropic.anthropic = createAnthropicClient();
+  }
+  return globalForAnthropic.anthropic;
 }
 
 const PERIOD_WEEKS: Record<string, number> = {
@@ -118,7 +118,7 @@ export async function generateSchedule(
     timePeriod: input.timePeriod,
   });
 
-  const message = await anthropic.messages.create({
+  const message = await getAnthropicClient().messages.create({
     model,
     max_tokens: 4096,
     messages: [{ role: "user", content: prompt }],
