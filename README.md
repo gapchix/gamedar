@@ -95,7 +95,7 @@ src/
 │   ├── robots.ts     # Dynamic robots.txt
 │   ├── sitemap.ts    # Dynamic sitemap.xml
 │   └── calendars/    # /calendars, /calendars/add, /calendars/:id
-├── middleware.ts      # Per-IP rate limiting for API routes
+├── proxy.ts          # Per-IP rate limiting for API routes
 ├── components/       # Shared UI (header, footer, calendar-form, calendar-list, calendar-view, share-button, sections)
 ├── lib/              # Libraries (Prisma, IGDB client, Anthropic client)
 ├── types/            # Shared TypeScript types (Zod schemas, IGDB mappings)
