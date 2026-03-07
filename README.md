@@ -30,10 +30,11 @@ npm install
 #   ANTHROPIC_API_KEY     - From Anthropic Console
 #   ANTHROPIC_MODEL       - Claude model ID (default: claude-sonnet-4-20250514)
 #   DAILY_GENERATION_LIMIT - Max calendars per day, global (default: 5)
+#   POSTGRES_PASSWORD      - Required, no default
 cp .env.example .env
 
 # Start PostgreSQL via Docker (exposed on port 5532)
-docker compose up db -d
+docker compose --profile dev up -d
 
 # Run migrations (also generates Prisma client)
 npx prisma migrate dev
@@ -89,7 +90,12 @@ make prod-migrate         # Run migrations
 src/
 ├── app/              # Routes and layouts
 │   ├── page.tsx      # Homepage
+│   ├── error.tsx     # Global error boundary
+│   ├── not-found.tsx # Custom 404 page
+│   ├── robots.ts     # Dynamic robots.txt
+│   ├── sitemap.ts    # Dynamic sitemap.xml
 │   └── calendars/    # /calendars, /calendars/add, /calendars/:id
+├── middleware.ts      # Per-IP rate limiting for API routes
 ├── components/       # Shared UI (header, footer, calendar-form, calendar-list, calendar-view, share-button, sections)
 ├── lib/              # Libraries (Prisma, IGDB client, Anthropic client)
 ├── types/            # Shared TypeScript types (Zod schemas, IGDB mappings)
@@ -97,6 +103,25 @@ src/
 prisma/
 └── schema.prisma     # Database schema
 ```
+
+## Security
+
+- Security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
+- Per-IP API rate limiting (30 req/min)
+- Global daily generation limit (configurable via `DAILY_GENERATION_LIMIT`)
+- Request body size limit (10 KB) on calendar creation
+- Input validation via Zod schemas (max lengths, enum constraints)
+- Timeouts on all external API calls (IGDB: 15s, Claude: 120s)
+- No secrets in code — all credentials via environment variables
+
+## SEO
+
+- Open Graph and Twitter Card meta tags on all pages
+- Dynamic metadata for shared calendar pages (title, description from calendar data)
+- Dynamic `sitemap.xml` with all calendar URLs
+- `robots.txt` allowing all crawlers
+- Custom error (500) and not-found (404) pages
+- Loading skeletons for server-rendered pages
 
 ## CI
 

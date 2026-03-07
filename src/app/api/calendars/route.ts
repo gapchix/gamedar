@@ -3,8 +3,18 @@ import { calendarFormSchema } from "@/types";
 import { prisma, igdbService, generateSchedule, logger } from "@/lib";
 import { DAILY_GENERATION_LIMIT } from "@/utils";
 
+const MAX_BODY_SIZE = 10 * 1024; // 10 KB
+
 export async function POST(request: Request) {
   try {
+    const contentLength = request.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+      return NextResponse.json(
+        { error: "Request body too large" },
+        { status: 413 },
+      );
+    }
+
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
 

@@ -35,6 +35,7 @@ class IgdbService {
     this.client = axios.create({
       baseURL: "https://api.igdb.com/v4",
       headers: { "Content-Type": "text/plain" },
+      timeout: 15_000,
     });
 
     this.client.interceptors.request.use(async (config) => {
@@ -79,6 +80,7 @@ class IgdbService {
         client_secret: clientSecret,
         grant_type: "client_credentials",
       },
+      timeout: 10_000,
     });
 
     this.tokenCache = {

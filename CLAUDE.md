@@ -19,16 +19,22 @@ AI-powered game calendar generator. Users select preferences (platform, genre, h
 ```
 src/
 ├── app/                # Next.js App Router — routes and layouts only
-│   ├── layout.tsx      # Root layout (HTML, Providers, Header, Footer)
+│   ├── layout.tsx      # Root layout (HTML, Providers, Header, Footer, SEO metadata)
 │   ├── providers.tsx   # Client-side ChakraProvider wrapper
 │   ├── page.tsx        # Homepage (/)
+│   ├── error.tsx       # Global error boundary
+│   ├── not-found.tsx   # Custom 404 page
+│   ├── robots.ts       # Dynamic robots.txt
+│   ├── sitemap.ts      # Dynamic sitemap.xml (includes all calendar URLs)
 │   ├── calendars/      # Calendar routes
 │   │   ├── page.tsx    # Calendar list (/calendars)
+│   │   ├── loading.tsx # Loading skeleton for calendar list
 │   │   ├── add/        # Generate calendar (/calendars/add)
-│   │   └── [id]/       # View calendar (/calendars/:id)
+│   │   └── [id]/       # View calendar (/calendars/:id) — dynamic OG metadata
 │   └── api/calendars/  # API routes
 │       ├── route.ts    # POST (create + generate) + GET (list)
 │       └── [id]/route.ts # GET (single calendar with games)
+├── middleware.ts        # Per-IP rate limiting for API routes
 ├── components/         # Shared UI components
 │   ├── header/         # Site header/navigation
 │   ├── footer/         # Site footer
@@ -76,12 +82,14 @@ generated/              # Prisma generated client (gitignored)
 - **`src/app/` is for routing only** — shared code goes in `components/`, `lib/`, `types/`, `utils/`.
 - **Don't install packages the user didn't request.** Transitive dependencies are fine, but don't add extra explicit dependencies without asking.
 - **Prisma v7:** DB URL is configured in `prisma.config.ts`, not in `schema.prisma`. Client is generated to `./generated/prisma/`. Use `@prisma/adapter-pg` for the PrismaClient constructor. DB column names use snake_case via `@map()`, Prisma fields stay camelCase.
-- **Database:** PostgreSQL 17 via Docker Compose. Dev: exposed on host port 5532 (`localhost:5532`). Prod: internal Docker network only (`db:5432`), no host port exposed.
-- **IGDB API:** Uses a dedicated axios instance with request/response interceptors for auth. "Action" and "Horror" are IGDB **themes** (not genres) — mapped via `igdbThemeMap`. Time-to-beat is a separate endpoint (`/game_time_to_beats`), not a nested field. Token is cached with 5-min buffer before expiry.
-- **Claude API:** Singleton client pattern (same as Prisma). Model set via `ANTHROPIC_MODEL` env var (required). `generateSchedule()` returns Zod-validated `GenerationResult`.
-- **Rate limiting:** Global daily generation limit via `DAILY_GENERATION_LIMIT` env var (defaults to `5`). Counted from `Calendar.createdAt` rows today. API returns 429 when exceeded.
+- **Database:** PostgreSQL 17 via Docker Compose. `POSTGRES_PASSWORD` env var is **required** (no default). Dev: exposed on host port 5532 (`localhost:5532`). Prod: internal Docker network only (`db:5432`), no host port exposed.
+- **IGDB API:** Uses a dedicated axios instance with request/response interceptors for auth. "Action" and "Horror" are IGDB **themes** (not genres) — mapped via `igdbThemeMap`. Time-to-beat is a separate endpoint (`/game_time_to_beats`), not a nested field. Token is cached with 5-min buffer before expiry. Timeouts: 15s for API requests, 10s for token requests.
+- **Claude API:** Singleton client pattern (same as Prisma). Model set via `ANTHROPIC_MODEL` env var (required). `generateSchedule()` returns Zod-validated `GenerationResult`. Timeout: 120s.
+- **Security headers:** Configured in `next.config.ts` — X-Frame-Options (DENY), X-Content-Type-Options (nosniff), Referrer-Policy, Permissions-Policy.
+- **Rate limiting:** Two layers: (1) Global daily generation limit via `DAILY_GENERATION_LIMIT` env var (defaults to `5`), counted from UTC midnight, API returns 429 when exceeded. (2) Per-IP rate limiting via `src/middleware.ts` — 30 requests/minute on `/api/*` routes.
+- **Request size limits:** POST `/api/calendars` rejects bodies larger than 10 KB (413 status).
 - **No client-side data fetching.** Never use `fetch`, `axios`, or any HTTP calls from client components. Always fetch data server-side in page/layout components (Server Components) and pass it as props to client components.
-- **Error logging:** Never pass raw `Error` objects in winston meta (`{ error }`). Error properties like `message` aren't enumerable, so they won't serialize. Always extract: `{ error: error.message, name: error.name }`.
+- **Error logging:** Never pass raw `Error` objects in winston meta (`{ error }`). Error properties like `message` aren't enumerable, so they won't serialize. Always extract: `{ error: error.message, name: error.name }`. Never log raw external API responses — log only metadata (e.g., `responseLength`).
 - **Prettier config** uses `.prettierrc` (not `.prettierrc.json`).
 - **Keep docs updated** — when making significant changes, update README.md and CLAUDE.md accordingly.
 - **Open-source repo** — no secrets, credentials, or API keys in code. Use environment variables. Keep code, comments, and commit messages clean and professional.
@@ -124,6 +132,14 @@ Docker profiles: `dev` (db with host port 5532) and `prod` (app + db, no db port
 
 `@/*` maps to `./src/*` — use it for all imports from src.
 
+## SEO
+
+- **Root metadata** (`layout.tsx`): title template (`%s | Gamedar`), description, keywords, Open Graph, Twitter cards, robots directives, `metadataBase` from `NEXT_PUBLIC_APP_URL`
+- **Page-specific metadata:** static exports on `/calendars` and `/calendars/add`, dynamic `generateMetadata()` on `/calendars/[id]` (calendar name, summary, platform, genres for OG + Twitter)
+- **Crawling:** `robots.ts` (allow all, link to sitemap) + `sitemap.ts` (dynamic — homepage, list, add page, all calendar URLs)
+- **Error pages:** `error.tsx` (global boundary), `not-found.tsx` (custom 404)
+- **Loading states:** `loading.tsx` skeletons for `/calendars` and `/calendars/[id]`
+
 ## TODO
 
 - [x] Project init (Next.js, Chakra UI, ESLint, Prettier, Husky)
@@ -139,3 +155,5 @@ Docker profiles: `dev` (db with host port 5532) and `prod` (app + db, no db port
 - [x] Calendar view page (`/calendars/[id]`) — display generated calendar with games
 - [x] Calendar list page (`/calendars`) — browse all calendars
 - [x] Production Docker deployment (multi-stage build, dev/prod profiles, Makefile)
+- [x] Security hardening (input validation, error leak fixes, body size limits, timeouts, security headers, per-IP rate limiting)
+- [x] SEO (metadata, OG tags, dynamic sitemap, robots.txt, error/404 pages, loading states)
