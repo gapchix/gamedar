@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   Box,
   Button,
@@ -10,23 +11,33 @@ import {
 import Link from "next/link";
 import { FiPlus } from "react-icons/fi";
 import { CalendarList } from "@/components";
-import { prisma } from "@/lib";
+import { prisma, logger } from "@/lib";
+
+export const metadata: Metadata = {
+  title: "Browse Calendars",
+  description:
+    "Explore AI-generated gaming calendars. Find inspiration for your next gaming schedule across PC, PlayStation, Xbox, and Nintendo Switch.",
+  openGraph: {
+    title: "Browse Gaming Calendars | Gamedar",
+    description:
+      "Explore AI-generated gaming calendars. Find inspiration for your next gaming schedule.",
+  },
+};
 
 export const dynamic = "force-dynamic";
 
 export default async function CalendarsPage() {
-  const calendars = await prisma.calendar.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: { select: { games: true } },
-      games: {
-        select: { coverUrl: true, title: true },
-        orderBy: { order: "asc" },
-        take: 5,
-      },
-    },
-    take: 50,
-  });
+  let calendars: Awaited<ReturnType<typeof fetchCalendars>> = [];
+
+  try {
+    calendars = await fetchCalendars();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logger.error("Failed to fetch calendars", {
+      error: message,
+      name: error instanceof Error ? error.name : "Unknown",
+    });
+  }
 
   return (
     <Box
@@ -60,4 +71,19 @@ export default async function CalendarsPage() {
       </Container>
     </Box>
   );
+}
+
+function fetchCalendars() {
+  return prisma.calendar.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      _count: { select: { games: true } },
+      games: {
+        select: { coverUrl: true, title: true },
+        orderBy: { order: "asc" },
+        take: 5,
+      },
+    },
+    take: 50,
+  });
 }

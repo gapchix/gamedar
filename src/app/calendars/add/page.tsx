@@ -1,20 +1,43 @@
+import type { Metadata } from "next";
 import { Box, Container, Heading, Text, VStack } from "@chakra-ui/react";
 import { CalendarForm } from "@/components";
-import { prisma } from "@/lib";
+import { prisma, logger } from "@/lib";
 import { DAILY_GENERATION_LIMIT } from "@/utils";
 import { createCalendar } from "./actions";
+
+export const metadata: Metadata = {
+  title: "Create Your Gaming Calendar",
+  description:
+    "Tell us your platform, favorite genres, and available time — our AI will generate a personalized gaming schedule just for you.",
+  openGraph: {
+    title: "Create Your Gaming Calendar | Gamedar",
+    description:
+      "Tell us your platform, favorite genres, and available time — our AI will generate a personalized gaming schedule just for you.",
+  },
+};
 
 export const dynamic = "force-dynamic";
 
 export default async function AddCalendarPage() {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  let remaining = DAILY_GENERATION_LIMIT;
 
-  const used = await prisma.calendar.count({
-    where: { createdAt: { gte: todayStart } },
-  });
+  try {
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
 
-  const remaining = Math.max(0, DAILY_GENERATION_LIMIT - used);
+    const used = await prisma.calendar.count({
+      where: { createdAt: { gte: todayStart } },
+    });
+
+    remaining = Math.max(0, DAILY_GENERATION_LIMIT - used);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logger.error("Failed to fetch generation count", {
+      error: message,
+      name: error instanceof Error ? error.name : "Unknown",
+    });
+  }
+
   return (
     <Box
       backgroundImage="radial-gradient(ellipse at 50% 0%, rgba(128,90,213,0.15) 0%, transparent 50%), radial-gradient(circle, rgba(128,90,213,0.06) 1px, transparent 1px)"
