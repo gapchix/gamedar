@@ -11,7 +11,7 @@ type ActionResult =
 export async function createCalendar(formData: unknown): Promise<ActionResult> {
   try {
     const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    todayStart.setUTCHours(0, 0, 0, 0);
 
     const todayCount = await prisma.calendar.count({
       where: { createdAt: { gte: todayStart } },

@@ -6,7 +6,7 @@ import { DAILY_GENERATION_LIMIT } from "@/utils";
 export async function POST(request: Request) {
   try {
     const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    todayStart.setUTCHours(0, 0, 0, 0);
 
     const todayCount = await prisma.calendar.count({
       where: { createdAt: { gte: todayStart } },
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
         name: error instanceof Error ? error.name : "Unknown",
       });
       return NextResponse.json(
-        { error: "Invalid request data", details: error },
+        { error: "Invalid request data" },
         { status: 400 },
       );
     }
@@ -137,6 +137,7 @@ export async function GET() {
     const calendars = await prisma.calendar.findMany({
       orderBy: { createdAt: "desc" },
       include: { _count: { select: { games: true } } },
+      take: 50,
     });
 
     logger.info("Fetched calendars", { count: calendars.length });

@@ -29,7 +29,10 @@ export type TimePeriod = (typeof timePeriodValues)[number];
 export type PlayStyle = (typeof playStyleValues)[number];
 
 export const calendarFormSchema = z.object({
-  name: z.string().min(1, "Calendar name is required"),
+  name: z
+    .string()
+    .min(1, "Calendar name is required")
+    .max(200, "Calendar name is too long"),
   platform: z.enum(platformValues),
   genres: z.array(z.enum(genreValues)).min(1, "Select at least one genre"),
   hoursPerWeek: z.number().int().min(1).max(40),
