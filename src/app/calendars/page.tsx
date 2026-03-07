@@ -25,6 +25,7 @@ export default async function CalendarsPage() {
         take: 5,
       },
     },
+    take: 50,
   });
 
   return (
