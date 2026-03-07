@@ -12,7 +12,7 @@ function createAnthropicClient(): Anthropic {
   if (!apiKey) {
     throw new Error("ANTHROPIC_API_KEY must be set");
   }
-  return new Anthropic({ apiKey });
+  return new Anthropic({ apiKey, timeout: 120_000 });
 }
 
 function getAnthropicClient(): Anthropic {
@@ -144,11 +144,9 @@ export async function generateSchedule(
     parsed = JSON.parse(jsonStr);
   } catch {
     logger.error("Failed to parse Claude response as JSON", {
-      response: textBlock.text.slice(0, 500),
+      responseLength: textBlock.text.length,
     });
-    throw new Error(
-      `Failed to parse Claude response as JSON: ${textBlock.text.slice(0, 200)}`,
-    );
+    throw new Error("Failed to parse Claude response as JSON");
   }
 
   const result = generationResultSchema.parse(parsed);
