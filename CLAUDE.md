@@ -34,7 +34,7 @@ src/
 │   └── api/calendars/  # API routes
 │       ├── route.ts    # POST (create + generate) + GET (list)
 │       └── [id]/route.ts # GET (single calendar with games)
-├── middleware.ts        # Per-IP rate limiting for API routes
+├── proxy.ts             # Per-IP rate limiting for API routes (Next.js proxy convention)
 ├── components/         # Shared UI components
 │   ├── header/         # Site header/navigation
 │   ├── footer/         # Site footer
@@ -86,7 +86,7 @@ generated/              # Prisma generated client (gitignored)
 - **IGDB API:** Uses a dedicated axios instance with request/response interceptors for auth. "Action" and "Horror" are IGDB **themes** (not genres) — mapped via `igdbThemeMap`. Time-to-beat is a separate endpoint (`/game_time_to_beats`), not a nested field. Token is cached with 5-min buffer before expiry. Timeouts: 15s for API requests, 10s for token requests.
 - **Claude API:** Singleton client pattern (same as Prisma). Model set via `ANTHROPIC_MODEL` env var (required). `generateSchedule()` returns Zod-validated `GenerationResult`. Timeout: 120s.
 - **Security headers:** Configured in `next.config.ts` — X-Frame-Options (DENY), X-Content-Type-Options (nosniff), Referrer-Policy, Permissions-Policy.
-- **Rate limiting:** Two layers: (1) Global daily generation limit via `DAILY_GENERATION_LIMIT` env var (defaults to `5`), counted from UTC midnight, API returns 429 when exceeded. (2) Per-IP rate limiting via `src/middleware.ts` — 30 requests/minute on `/api/*` routes.
+- **Rate limiting:** Two layers: (1) Global daily generation limit via `DAILY_GENERATION_LIMIT` env var (defaults to `5`), counted from UTC midnight, API returns 429 when exceeded. (2) Per-IP rate limiting via `src/proxy.ts` — 30 requests/minute on `/api/*` routes.
 - **Request size limits:** POST `/api/calendars` rejects bodies larger than 10 KB (413 status).
 - **No client-side data fetching.** Never use `fetch`, `axios`, or any HTTP calls from client components. Always fetch data server-side in page/layout components (Server Components) and pass it as props to client components.
 - **Error logging:** Never pass raw `Error` objects in winston meta (`{ error }`). Error properties like `message` aren't enumerable, so they won't serialize. Always extract: `{ error: error.message, name: error.name }`. Never log raw external API responses — log only metadata (e.g., `responseLength`).
