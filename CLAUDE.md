@@ -6,13 +6,17 @@ AI-powered game calendar generator. Users select preferences (platform, genre, h
 
 ## Tech Stack
 
-- **Framework:** Next.js 15+ with App Router, TypeScript (strict mode)
+- **Framework:** Next.js 16+ with App Router, TypeScript (strict mode)
 - **UI:** Chakra UI v3 (no Tailwind, no other UI libs), react-hook-form + Zod for forms
 - **ORM:** Prisma v7 with PostgreSQL via `@prisma/adapter-pg`
 - **AI:** Claude API (`@anthropic-ai/sdk`) — for calendar generation, model configurable via `ANTHROPIC_MODEL` env var
 - **Game Data:** IGDB API (Twitch OAuth, axios client) — game search by platform/genre/theme + time-to-beat
 - **HTTP:** axios for external API clients
 - **Infra:** Docker + Docker Compose (multi-stage build, dev/prod profiles)
+
+## Custom Skills (Slash Commands)
+
+- `/igdb-sync` — Keeps the IGDB ID mappings in `src/types/igdb.ts` (`igdbGenreMap`, `igdbThemeMap`, `igdbPlatformMap`) aligned with IGDB's live taxonomy. A script (`.claude/skills/igdb-sync/scripts/igdb-sync.js`, also `npm run igdb-sync`) checks two signals: **coverage** — every `genreValues`/`platformValues` enum has a mapping (an unmapped genre silently returns zero games) — and **taxonomy drift** — every mapped IGDB ID still exists and its live name still matches the app label. Detect-only: it never edits `igdb.ts`; you apply flagged fixes by hand. Runs `--offline` for the coverage check without IGDB creds.
 
 ## Project Structure
 
@@ -157,3 +161,14 @@ Docker profiles: `dev` (db with host port 5532) and `prod` (app + db, no db port
 - [x] Production Docker deployment (multi-stage build, dev/prod profiles, Makefile)
 - [x] Security hardening (input validation, error leak fixes, body size limits, timeouts, security headers, per-IP rate limiting)
 - [x] SEO (metadata, OG tags, dynamic sitemap, robots.txt, error/404 pages, loading states)
+- [ ] Analytics — page view tracking (third-party) + generation stats dashboard (from DB data)
+
+## Verification
+
+A change counts as verified when `npm run lint && npm run build` both pass and a QA smoke
+succeeds: the home page (`/`), the calendar list (`/calendars`), and one calendar detail
+(`/calendars/[id]`) each render HTTP 200 with no console errors, and any field the task
+touched is visibly present. The build is **DB-free**: `/calendars`, `/calendars/[id]`, and
+`/sitemap.xml` are server-rendered on demand (`ƒ`), so `next build` needs no database.
+
+Machine-specific deploy/ops configuration lives in `CLAUDE.local.md` (gitignored).

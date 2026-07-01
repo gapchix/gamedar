@@ -46,3 +46,6 @@ next-env.d.ts
 /generated
 
 .idea
+
+# machine-specific agent config
+CLAUDE.local.md

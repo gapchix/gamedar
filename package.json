@@ -9,6 +9,7 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "igdb-sync": "node .claude/skills/igdb-sync/scripts/igdb-sync.js",
     "prepare": "husky"
   },
   "lint-staged": {
