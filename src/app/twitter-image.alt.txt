@@ -1,0 +1,1 @@
+Gamedar — AI-powered game calendar. Pick your platform, genres, and hours per week; Claude builds your personal gaming schedule.
