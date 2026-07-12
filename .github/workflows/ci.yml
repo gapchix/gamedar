@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   lint-and-format:
@@ -26,3 +26,27 @@ jobs:
 
       - name: Prettier
         run: npm run format:check
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    env:
+      # prisma.config.ts reads this; generate + the DB-free build never connect
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/gamedar
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Next.js build
+        run: npm run build

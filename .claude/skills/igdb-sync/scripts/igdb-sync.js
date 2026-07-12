@@ -9,7 +9,7 @@
  * hand-maintained against IGDB's live /genres, /themes, /platforms taxonomy and can
  * silently drift (an ID retired or renamed, a new app genre added without a mapping).
  *
- * Like schema-sync, this script is DETECT-ONLY. It NEVER edits src/types/igdb.ts.
+ * This script is DETECT-ONLY. It NEVER edits src/types/igdb.ts.
  * It reports two independent signals and the agent applies any edit by hand:
  *
  *   1. Coverage  (no network) — every value in calendar.ts `genreValues` /
@@ -129,10 +129,16 @@ function parseNumArrayMap(body) {
 }
 
 async function getToken(id, secret) {
-  const url = `${TWITCH_TOKEN_URL}?client_id=${encodeURIComponent(
-    id,
-  )}&client_secret=${encodeURIComponent(secret)}&grant_type=client_credentials`;
-  const res = await fetch(url, { method: "POST" });
+  // Credentials in the form body, not the URL, so they never hit access logs.
+  const res = await fetch(TWITCH_TOKEN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: id,
+      client_secret: secret,
+      grant_type: "client_credentials",
+    }).toString(),
+  });
   if (!res.ok) {
     fail(`Twitch OAuth failed (${res.status}). Check IGDB_CLIENT_ID/SECRET.`);
   }

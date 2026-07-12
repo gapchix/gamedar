@@ -1,4 +1,4 @@
-.PHONY: dev-db dev migrate generate prod-build prod-up prod-down prod-logs prod-migrate lint format
+.PHONY: dev-db dev migrate generate prod-deploy prod-build prod-up prod-down prod-logs prod-migrate lint format
 
 # -- Dev --
 dev-db:

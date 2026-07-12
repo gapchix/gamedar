@@ -4,6 +4,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
+# -- prod-deps: node_modules without devDependencies, for the runner --
+FROM deps AS prod-deps
+RUN npm prune --omit=dev
+
 # -- builder --
 FROM node:20-alpine AS builder
 WORKDIR /app
@@ -27,7 +31,9 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/generated ./generated
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-COPY --from=builder /app/node_modules ./node_modules
+# Production dependencies only (prisma CLI for `migrate deploy` at container
+# start, plus the app's runtime deps) — devDependencies stay out of the image.
+COPY --from=prod-deps /app/node_modules ./node_modules
 
 USER nextjs
 
