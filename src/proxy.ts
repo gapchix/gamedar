@@ -1,35 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createRateLimiter, clientIpFromHeaders } from "@/lib/rate-limit";
 
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 30;
+const MAX_REQUESTS_PER_MINUTE = 30;
 
-const ipRequests = new Map<string, { count: number; resetAt: number }>();
-
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown"
-  );
-}
+const limiter = createRateLimiter(MAX_REQUESTS_PER_MINUTE);
 
 export function proxy(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
-  const ip = getClientIp(request);
-  const now = Date.now();
-  const entry = ipRequests.get(ip);
-
-  if (!entry || now > entry.resetAt) {
-    ipRequests.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return NextResponse.next();
-  }
-
-  entry.count++;
-
-  if (entry.count > MAX_REQUESTS) {
+  if (!limiter.check(clientIpFromHeaders(request.headers))) {
     return NextResponse.json(
       { error: "Too many requests. Please slow down." },
       { status: 429 },

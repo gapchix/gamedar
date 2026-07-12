@@ -30,6 +30,7 @@ interface TimeToBeatEntry {
 class IgdbService {
   private client: AxiosInstance;
   private tokenCache: TokenCache | null = null;
+  private tokenRequest: Promise<string> | null = null;
 
   constructor() {
     this.client = axios.create({
@@ -47,11 +48,18 @@ class IgdbService {
 
     this.client.interceptors.response.use(undefined, async (error) => {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        this.tokenCache = null;
-        const token = await this.getAccessToken();
-        const config = error.config!;
-        config.headers["Authorization"] = `Bearer ${token}`;
-        return this.client.request(config);
+        const config = error.config as typeof error.config & {
+          _retried?: boolean;
+        };
+        // Retry once with a fresh token; a second 401 means the
+        // credentials are bad, not the token stale.
+        if (config && !config._retried) {
+          config._retried = true;
+          this.tokenCache = null;
+          const token = await this.getAccessToken();
+          config.headers["Authorization"] = `Bearer ${token}`;
+          return this.client.request(config);
+        }
       }
       throw error;
     });
@@ -65,23 +73,34 @@ class IgdbService {
       return this.tokenCache.accessToken;
     }
 
+    // Deduplicate concurrent refreshes into a single token request.
+    this.tokenRequest ??= this.fetchAccessToken().finally(() => {
+      this.tokenRequest = null;
+    });
+    return this.tokenRequest;
+  }
+
+  private async fetchAccessToken(): Promise<string> {
     const clientId = process.env.IGDB_CLIENT_ID;
     const clientSecret = process.env.IGDB_CLIENT_SECRET;
     if (!clientId || !clientSecret) {
       throw new Error("IGDB_CLIENT_ID and IGDB_CLIENT_SECRET must be set");
     }
 
+    // Credentials go in the form body, not query params, so they never
+    // land in proxy or access logs.
     const { data } = await axios.post<{
       access_token: string;
       expires_in: number;
-    }>(TWITCH_TOKEN_URL, null, {
-      params: {
+    }>(
+      TWITCH_TOKEN_URL,
+      new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
         grant_type: "client_credentials",
-      },
-      timeout: 10_000,
-    });
+      }),
+      { timeout: 10_000 },
+    );
 
     this.tokenCache = {
       accessToken: data.access_token,

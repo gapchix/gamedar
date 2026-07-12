@@ -1,129 +1,57 @@
 import { NextResponse } from "next/server";
-import { calendarFormSchema } from "@/types";
-import { prisma, igdbService, generateSchedule, logger } from "@/lib";
+import { prisma, createCalendarFromInput, logger } from "@/lib";
 import { DAILY_GENERATION_LIMIT } from "@/utils";
 
 const MAX_BODY_SIZE = 10 * 1024; // 10 KB
 
 export async function POST(request: Request) {
   try {
-    const contentLength = request.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+    const rawBody = await request.text();
+    if (Buffer.byteLength(rawBody, "utf8") > MAX_BODY_SIZE) {
       return NextResponse.json(
         { error: "Request body too large" },
         { status: 413 },
       );
     }
 
-    const todayStart = new Date();
-    todayStart.setUTCHours(0, 0, 0, 0);
-
-    const todayCount = await prisma.calendar.count({
-      where: { createdAt: { gte: todayStart } },
-    });
-
-    if (todayCount >= DAILY_GENERATION_LIMIT) {
-      logger.warn("Daily generation limit reached", {
-        limit: DAILY_GENERATION_LIMIT,
-        used: todayCount,
-      });
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
       return NextResponse.json(
-        {
-          error: "Daily generation limit reached. Please try again tomorrow.",
-          limit: DAILY_GENERATION_LIMIT,
-          remaining: 0,
-        },
-        { status: 429 },
+        { error: "Invalid JSON in request body" },
+        { status: 400 },
       );
     }
 
-    const body = await request.json();
-    const data = calendarFormSchema.parse(body);
+    const outcome = await createCalendarFromInput(body);
 
-    logger.info("Creating calendar", {
-      name: data.name,
-      platform: data.platform,
-      genres: data.genres,
-      hoursPerWeek: data.hoursPerWeek,
-      timePeriod: data.timePeriod,
-      playStyle: data.playStyle,
-    });
-
-    const games = await igdbService.fetchGamesByPreferences(
-      data.platform,
-      data.genres,
-    );
-
-    if (games.length === 0) {
-      logger.warn("No games found for preferences", {
-        platform: data.platform,
-        genres: data.genres,
-      });
-      return NextResponse.json(
-        { error: "No games found for the selected preferences" },
-        { status: 404 },
-      );
+    switch (outcome.status) {
+      case "limit-reached":
+        return NextResponse.json(
+          {
+            error: "Daily generation limit reached. Please try again tomorrow.",
+            limit: DAILY_GENERATION_LIMIT,
+            remaining: 0,
+          },
+          { status: 429 },
+        );
+      case "no-games":
+        return NextResponse.json(
+          { error: "No games found for the selected preferences" },
+          { status: 404 },
+        );
+      case "created":
+        return NextResponse.json(
+          { id: outcome.id, remaining: outcome.remaining },
+          { status: 201 },
+        );
     }
-
-    logger.info("Fetched games from IGDB", { count: games.length });
-
-    const result = await generateSchedule({
-      calendarName: data.name,
-      platform: data.platform,
-      genres: [...data.genres],
-      hoursPerWeek: data.hoursPerWeek,
-      timePeriod: data.timePeriod,
-      playStyle: data.playStyle,
-      games,
-    });
-
-    logger.info("Generated schedule", {
-      scheduledGames: result.games.length,
-      summary: result.summary,
-    });
-
-    const igdbGameMap = new Map(games.map((g) => [g.igdbId, g]));
-
-    const calendar = await prisma.calendar.create({
-      data: {
-        name: result.calendarName,
-        platform: data.platform,
-        genres: [...data.genres],
-        hoursPerWeek: data.hoursPerWeek,
-        timePeriod: data.timePeriod,
-        playStyle: data.playStyle,
-        summary: result.summary,
-        games: {
-          create: result.games.map((g) => ({
-            igdbId: g.igdbId,
-            title: g.title,
-            coverUrl: igdbGameMap.get(g.igdbId)?.coverUrl ?? null,
-            estimatedHours: g.estimatedHours,
-            startDate: new Date(g.startDate),
-            endDate: new Date(g.endDate),
-            order: g.order,
-            reason: g.reason,
-          })),
-        },
-      },
-    });
-
-    logger.info("Calendar created", { calendarId: calendar.id });
-
-    return NextResponse.json(
-      {
-        id: calendar.id,
-        remaining: DAILY_GENERATION_LIMIT - todayCount - 1,
-      },
-      { status: 201 },
-    );
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
       logger.warn("Invalid request data", {
-        error: errorMessage,
-        name: error instanceof Error ? error.name : "Unknown",
+        error: error.message,
+        name: error.name,
       });
       return NextResponse.json(
         { error: "Invalid request data" },

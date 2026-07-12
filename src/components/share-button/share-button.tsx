@@ -15,13 +15,22 @@ export function ShareButton({ calendarId, variant }: ShareButtonProps) {
     e.stopPropagation();
 
     const url = `${window.location.origin}/calendars/${calendarId}`;
-    navigator.clipboard.writeText(url).then(() => {
-      toaster.create({
-        title: "Link copied!",
-        description: "Calendar link has been copied to your clipboard.",
-        type: "success",
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toaster.create({
+          title: "Link copied!",
+          description: "Calendar link has been copied to your clipboard.",
+          type: "success",
+        });
+      })
+      .catch(() => {
+        toaster.create({
+          title: "Couldn't copy link",
+          description: `Copy it manually: ${url}`,
+          type: "error",
+        });
       });
-    });
   }
 
   if (variant === "icon") {
