@@ -75,10 +75,12 @@ const playStyleLabels: Record<string, string> = {
 };
 
 function formatDate(date: Date) {
+  // Fixed timeZone keeps server and client output identical (avoids hydration mismatch)
   return new Date(date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
