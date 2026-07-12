@@ -2,7 +2,7 @@
 
 **AI-powered game calendar generator.** Pick your platform, favorite genres, and weekly hours — Claude builds you a personalized gaming schedule from real IGDB game data.
 
-**Live demo → [gamedar.gapchix.io](https://gamedar.gapchix.io)**
+**Live demo → [gamedar.gapchix.io](https://gamedar.gapchix.io)** · **Build log → [How I built Gamedar](https://gapchix.io/blog/building-gamedar-ai-game-calendar)**
 
 [![CI](https://github.com/gapchix/gamedar/actions/workflows/ci.yml/badge.svg)](https://github.com/gapchix/gamedar/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
