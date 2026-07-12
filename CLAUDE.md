@@ -51,14 +51,17 @@ src/
 ├── lib/                # Shared libraries
 │   ├── prisma.ts       # Prisma client singleton
 │   ├── igdb.ts         # IGDB API client (axios instance, Twitch OAuth, game search)
-│   └── anthropic.ts    # Anthropic client singleton + schedule generation
+│   ├── anthropic.ts    # Anthropic client singleton + schedule generation
+│   ├── create-calendar.ts   # Shared calendar-creation flow (used by API route + server action)
+│   ├── generation-limit.ts  # Atomic daily generation cap (DailyUsage counter)
+│   └── rate-limit.ts   # Fixed-window per-IP limiter (dependency-free, used by proxy + action)
 ├── types/              # Shared TypeScript types and interfaces
 │   ├── calendar.ts     # Form schema (Zod), platform/genre/period/playStyle enums
 │   ├── igdb.ts         # IGDB genre/theme/platform ID mappings, game types
 │   └── generation.ts   # Claude generation input/output types (Zod schemas)
 └── utils/              # Shared utility functions
 prisma/
-├── schema.prisma       # Database schema (Calendar, CalendarGame models)
+├── schema.prisma       # Database schema (Calendar, CalendarGame, DailyUsage models)
 ├── migrations/         # Prisma migrations
 prisma.config.ts        # Prisma v7 config (datasource URL lives here, not in schema)
 generated/              # Prisma generated client (gitignored)
@@ -88,9 +91,9 @@ generated/              # Prisma generated client (gitignored)
 - **Prisma v7:** DB URL is configured in `prisma.config.ts`, not in `schema.prisma`. Client is generated to `./generated/prisma/`. Use `@prisma/adapter-pg` for the PrismaClient constructor. DB column names use snake_case via `@map()`, Prisma fields stay camelCase.
 - **Database:** PostgreSQL 17 via Docker Compose. `POSTGRES_PASSWORD` env var is **required** (no default). Dev: exposed on host port 5532 (`localhost:5532`). Prod: internal Docker network only (`db:5432`), no host port exposed.
 - **IGDB API:** Uses a dedicated axios instance with request/response interceptors for auth. "Action" and "Horror" are IGDB **themes** (not genres) — mapped via `igdbThemeMap`. Time-to-beat is a separate endpoint (`/game_time_to_beats`), not a nested field. Token is cached with 5-min buffer before expiry. Timeouts: 15s for API requests, 10s for token requests.
-- **Claude API:** Singleton client pattern (same as Prisma). Model set via `ANTHROPIC_MODEL` env var (required). `generateSchedule()` returns Zod-validated `GenerationResult`. Timeout: 120s.
+- **Claude API:** Singleton client pattern (same as Prisma). Model set via `ANTHROPIC_MODEL` env var (required). `generateSchedule()` returns Zod-validated `GenerationResult` (dates regex-checked, strings length-capped). The user-chosen calendar name is wrapped in `<calendar_name>` tags and treated strictly as data (prompt-injection isolation). Timeout: 120s.
 - **Security headers:** Configured in `next.config.ts` — X-Frame-Options (DENY), X-Content-Type-Options (nosniff), Referrer-Policy, Permissions-Policy.
-- **Rate limiting:** Two layers: (1) Global daily generation limit via `DAILY_GENERATION_LIMIT` env var (defaults to `5`), counted from UTC midnight, API returns 429 when exceeded. (2) Per-IP rate limiting via `src/proxy.ts` — 30 requests/minute on `/api/*` routes.
+- **Rate limiting:** Three layers: (1) Global daily generation limit via `DAILY_GENERATION_LIMIT` env var (defaults to `5`) — reserved **atomically** in the `daily_usage` table (`src/lib/generation-limit.ts`) before any IGDB/Claude call; failed generations release the slot. (2) Per-IP limiting via `src/proxy.ts` — 30 req/min on `/api/*`. (3) Per-IP limiting on the `createCalendar` server action — 5 req/min. Client IP = **last** `x-forwarded-for` entry (the one appended by our nginx); never trust the first entry.
 - **Request size limits:** POST `/api/calendars` rejects bodies larger than 10 KB (413 status).
 - **No client-side data fetching.** Never use `fetch`, `axios`, or any HTTP calls from client components. Always fetch data server-side in page/layout components (Server Components) and pass it as props to client components.
 - **Error logging:** Never pass raw `Error` objects in winston meta (`{ error }`). Error properties like `message` aren't enumerable, so they won't serialize. Always extract: `{ error: error.message, name: error.name }`. Never log raw external API responses — log only metadata (e.g., `responseLength`).
@@ -104,7 +107,7 @@ generated/              # Prisma generated client (gitignored)
 - **Prettier:** Configured in `.prettierrc`
 - **Husky:** Pre-commit hook runs `lint-staged`
 - **lint-staged:** ESLint --fix + Prettier on `*.{ts,tsx}`, Prettier on `*.{json,md,yml,yaml}`
-- **CI:** GitHub Actions (`.github/workflows/ci.yml`) — runs ESLint + Prettier check on push to `main` and PRs
+- **CI:** GitHub Actions (`.github/workflows/ci.yml`) — ESLint + Prettier check and a production build (prisma generate + next build) on pushes and PRs to `main` and `dev`
 
 ## Commands
 
